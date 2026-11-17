@@ -517,6 +517,16 @@ textarea[readonly],input[readonly]{opacity:.75}
 #termPop b{font-family:var(--f-display);font-size:1.25rem;font-weight:400}
 #termPop p{margin:2px 0 0}
 .figs figcaption b{color:#211C52}
+.ladder{display:grid;gap:14px;position:relative}
+.lstep{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
+.lnum{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#1c1c1e;display:grid;place-items:center;font-family:var(--f-display);font-size:1.4rem;box-shadow:0 3px 0 rgba(0,0,0,.12);margin-top:10px}
+.lbody{display:grid;gap:8px;min-width:0}
+.pickrow{gap:8px}.pickrow .chip{font-size:.95rem;padding:8px 14px;min-height:40px;background:var(--surface);border:2px solid var(--line-strong,#c7cad5)}
+.pickrow .chip[aria-pressed="true"]{background:#1c1c1e;color:#ffd02f;border-color:#1c1c1e}
+.sentbox{background:var(--blue-light,#e8ecff);border-radius:18px;padding:14px 16px;display:grid;gap:8px;justify-items:start}
+.sentbox .sent{font-size:1.12rem;line-height:1.7;font-weight:700;margin:0;color:var(--ink)}
+@media (max-width:560px){.lstep{grid-template-columns:34px minmax(0,1fr)}.lnum{width:34px;height:34px;font-size:1.1rem}}
+
 [data-act="ai"],[data-act="aiAll"]{display:none!important}
 .kq-on label.f.q{background:var(--sunk);border:2px solid var(--line-soft,#eef0f3);border-radius:18px;padding:14px 16px 16px;gap:6px;position:relative;align-content:start;transition:border-color .2s,background .2s}
 .kq-on label.f.q .qt{font-size:1.08rem;font-weight:800;color:var(--ink);padding-right:34px;line-height:1.4}
@@ -1423,8 +1433,9 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clone=o=>JSON.parse(JSON.stringify(o));
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2800)}
-const ls={get(k,d){try{const v=localStorage.getItem('rh5:'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('rh5:'+k,JSON.stringify(v))}catch(e){}}};
-const ss={get(k){try{return sessionStorage.getItem('rh5:'+k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem('rh5:'+k,v)}catch(e){}}};
+const CLASS=(new URLSearchParams(location.search).get('class')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,20);const CP=p=>CLASS?'classes/'+CLASS+'/'+p:p;const LSP='rh5:'+(CLASS?CLASS+':':'');
+const ls={get(k,d){try{const v=localStorage.getItem(LSP+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(LSP+k,JSON.stringify(v))}catch(e){}}};
+const ss={get(k){try{return sessionStorage.getItem(LSP+k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(LSP+k,v)}catch(e){}}};
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -1457,13 +1468,13 @@ const myDoc=()=>{const k=stuKey();return k?(S.stu[k]||{}):{}};
 const Store={mode:'local',db:null,L:{},
  async init(){try{const cfg=window.FIREBASE_CONFIG;if(!cfg||!cfg.apiKey||!window.firebase)return;firebase.initializeApp(cfg);try{await firebase.auth().signInAnonymously()}catch(e){console.warn('anon auth',e)}this.db=firebase.firestore();this.mode='db'}catch(e){console.warn('firebase',e)}},
  emit(k,v){(this.L[k]||[]).forEach(f=>f(v))},
- watchDoc(p,cb){if(this.mode==='db'){this.db.doc(p).onSnapshot(s=>cb(s.exists?s.data():null),()=>{})}else{(this.L[p]=this.L[p]||[]).push(cb);cb(ls.get('d:'+p,null))}},
- async setDoc(p,d){if(this.mode==='db'){await this.db.doc(p).set(d)}else{ls.set('d:'+p,d);this.emit(p,clone(d))}},
- async updateDoc(p,patch,cache){if(this.mode==='db'){const r=this.db.doc(p);try{await r.update(patch)}catch(e){await r.set(Object.assign({},cache||{},patch))}}else{const cur=ls.get('d:'+p,{})||{};Object.assign(cur,patch);ls.set('d:'+p,cur);this.emit(p,clone(cur))}},
- watchCol(n,cb){if(this.mode==='db'){this.db.collection(n).orderBy('createdAt','desc').limit(500).onSnapshot(s=>cb(s.docs.map(d=>Object.assign({id:d.id},d.data()))),()=>{})}else{(this.L[n]=this.L[n]||[]).push(cb);cb(ls.get('c:'+n,[]))}},
- async add(n,d){if(this.mode==='db'){await this.db.collection(n).add(d)}else{const a=ls.get('c:'+n,[]);a.unshift(Object.assign({id:'l'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)},d));ls.set('c:'+n,a);this.emit(n,a)}},
- async upd(n,id,patch){if(this.mode==='db'){await this.db.collection(n).doc(id).update(patch)}else{const a=ls.get('c:'+n,[]);const x=a.find(y=>y.id===id);if(x)Object.assign(x,patch);ls.set('c:'+n,a);this.emit(n,a)}},
- async del(n,id){if(this.mode==='db'){await this.db.collection(n).doc(id).delete()}else{const a=ls.get('c:'+n,[]).filter(x=>x.id!==id);ls.set('c:'+n,a);this.emit(n,a)}}
+ watchDoc(p,cb){p=CP(p);if(this.mode==='db'){this.db.doc(p).onSnapshot(s=>cb(s.exists?s.data():null),()=>{})}else{(this.L[p]=this.L[p]||[]).push(cb);cb(ls.get('d:'+p,null))}},
+ async setDoc(p,d){p=CP(p);if(this.mode==='db'){await this.db.doc(p).set(d)}else{ls.set('d:'+p,d);this.emit(p,clone(d))}},
+ async updateDoc(p,patch,cache){p=CP(p);if(this.mode==='db'){const r=this.db.doc(p);try{await r.update(patch)}catch(e){await r.set(Object.assign({},cache||{},patch))}}else{const cur=ls.get('d:'+p,{})||{};Object.assign(cur,patch);ls.set('d:'+p,cur);this.emit(p,clone(cur))}},
+ watchCol(n,cb){n=CP(n);if(this.mode==='db'){this.db.collection(n).orderBy('createdAt','desc').limit(500).onSnapshot(s=>cb(s.docs.map(d=>Object.assign({id:d.id},d.data()))),()=>{})}else{(this.L[n]=this.L[n]||[]).push(cb);cb(ls.get('c:'+n,[]))}},
+ async add(n,d){n=CP(n);if(this.mode==='db'){await this.db.collection(n).add(d)}else{const a=ls.get('c:'+n,[]);a.unshift(Object.assign({id:'l'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)},d));ls.set('c:'+n,a);this.emit(n,a)}},
+ async upd(n,id,patch){n=CP(n);if(this.mode==='db'){await this.db.collection(n).doc(id).update(patch)}else{const a=ls.get('c:'+n,[]);const x=a.find(y=>y.id===id);if(x)Object.assign(x,patch);ls.set('c:'+n,a);this.emit(n,a)}},
+ async del(n,id){n=CP(n);if(this.mode==='db'){await this.db.collection(n).doc(id).delete()}else{const a=ls.get('c:'+n,[]).filter(x=>x.id!==id);ls.set('c:'+n,a);this.emit(n,a)}}
 };
 async function safe(p,ok){try{await p;if(ok)toast(ok);return true}catch(e){toast('저장하지 못했어요. 편집할 수 있는 계정으로 열었는지 확인해 주세요.');return false}}
 function setMine(patch){const k=stuKey();if(!k)return Promise.resolve(false);S.stu[k]=Object.assign({},S.stu[k],patch);return safe(Store.updateDoc('students/'+k,patch,S.stu[k]))}
@@ -1508,7 +1519,7 @@ function changed(k){header();const deps=VIEW==='do'?(DEPT[ACTK[PARAM].type]||[])
 document.addEventListener('focusout',()=>{if(!pending)return;setTimeout(()=>{if(pending&&!busy()){pending=false;render(true)}},250)});
 function header(){
  $('#teamTitle').textContent=S.cfg.teamName||'로봇 해커톤 연습실';
- $('#teamSub').textContent=S.cfg.contestDate?`대회까지 D-${Math.max(0,ddiff(todayStr(),S.cfg.contestDate))}`:'스파이크 프라임 · 허스키렌즈';
+ $('#teamSub').textContent=(CLASS?CLASS.toUpperCase()+'반 · ':'')+(S.cfg.contestDate?`대회까지 D-${Math.max(0,ddiff(todayStr(),S.cfg.contestDate))}`:'스파이크 프라임 · 허스키렌즈');
  const w=$('#whoChip');if(ME===''){w.hidden=true}else{w.hidden=false;w.innerHTML=`<span class="av m${ME}">${esc(memberName(ME)).slice(0,1)}</span>${esc(memberName(ME))}`}
  const tabs=ME===''?[]:(isT()?T_TABS:STU_TABS);let cur=VIEW;if(isT()&&LIBS.some(l=>l[0]===VIEW))cur='official';if(VIEW==='do')cur=isT()?'tacts':'home';if(VIEW==='rev')cur='tdash';
  $('#tabs').innerHTML=tabs.map(([h,n])=>`<a href="#${h}" aria-current="${h===cur}">${n}</a>`).join('');$('#tabs').hidden=!tabs.length;
@@ -1583,13 +1594,31 @@ AV.step1=a=>{const t=topicOf(a.topic),k=a.k;
  return `${stepGuide(1)}${fbBox([k])}${videoBox(t)}<div class="toy topic-head" style="--tc:${t.c};border-top:10px solid ${t.c}"><h3 style="font-size:1.6rem">${esc(t.t)} <span class="small">${esc(t.m)}</span></h3><p style="font-size:1.08rem">${esc(t.why)}</p>
   <div class="note"><b>대회 안내 자료의 참고 문제 상황</b> ${t.ex.map(esc).join(' · ')} <span class="small">(참고용이에요. 이 소주제 안에서 자유롭게 정할 수 있어요.)</span></div></div>
  ${topicProse(t)}
- <div class="grid2"><div class="panel"><h3>누가 불편할까?</h3><div class="chips">${t.who.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div><h3 style="margin-top:10px">어디서?</h3><div class="chips">${t.where.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div></div><div class="panel"><h3>이런 문제가 있을 수 있어요</h3><ul class="bul">${t.probs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h3 style="margin-top:8px">생각해 볼 질문</h3><ul class="bul">${t.qs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>
- <div class="toy"><h3>문제 찾기</h3><p class="small">위의 예시를 그대로 쓰지 말고, 내가 직접 보거나 들은 일을 떠올려요.</p>
-  <div class="grid2">${fld(k,'who','누가 불편할까요?','','예: 혼자 사시는 할머니')}${fld(k,'where','어디서?','','예: 우리 동네 아파트 거실')}${fld(k,'when','언제?','','예: 아침, 저녁 약 먹을 시간')}${fld(k,'what','어떤 불편이 있나요?','','예: 약 먹는 시간을 잊어버려요')}</div>
-  ${fld(k,'why','왜 문제일까요?','내가 본 적 있거나 들은 이야기','예: 우리 할머니도 약을 두 번 드신 적이 있어서 엄마가 걱정하셨어요.',1)}
-  ${fld(k,'future','10년 뒤 미래에는 어떻게 될까요?','미래 사회 솔루션!','예: 혼자 사는 어르신이 더 많아져서 이런 일이 더 자주 생길 거예요.',1)}
-  ${fld(k,'prob','문제를 한 문장으로','계획서 ① 칸에 들어갈 문장이에요. 누가 · 어디서 · 어떤 불편이 모두 들어가게!','예: 우리 동네에 혼자 사시는 할머니들이 약 먹는 시간을 자주 잊어버려서 위험해요.',1,90)}
+ <div class="panel"><h3>이런 문제가 있을 수 있어요</h3><ul class="bul">${t.probs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h3 style="margin-top:8px">생각해 볼 질문</h3><ul class="bul">${t.qs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+ <div class="toy"><h3>문제 찾기 사다리</h3><p class="small">한 칸씩 올라가요. 카드를 누르면 칸에 들어가고, 내 말로 고쳐 써도 돼요.</p>
+  <div class="ladder">
+  ${lstep(1,fld(k,'where','어디를 떠올려 볼까?','우리 동네, 학교, 집처럼 내가 아는 곳이면 더 좋아요.','예: 학교 앞 스쿨존 횡단보도'),ladPick(k,'where',t.where))}
+  ${lstep(2,fld(k,'who','거기에 누가 있어?','그곳에서 곤란해할 것 같은 사람을 골라요.','예: 1학년 동생'),ladPick(k,'who',t.who))}
+  ${lstep(3,fld(k,'when','언제 그런 일이 생길까?','하루 중 언제, 어떤 날인지 떠올려요.','예: 아침 등교 때'),ladPick(k,'when',WHEN[t.n]||[]))}
+  ${lstep(4,fld(k,'what','그 사람에게 어떤 아찔하거나 속상한 순간이 있을까?','"~해서"로 끝나게 써 봐요. 그다음 느낌을 하나 골라요.','예: 차 사이에서 갑자기 뛰어나와서')+fld(k,'feel','그때 느낌은?','','예: 위험해요'),ladPick(k,'feel',FEELS))}
+  ${lstep(5,fld(k,'cause','왜 그런 일이 생길까?','이유를 하나 골라 보고, 내 말로 더 자세히 써도 좋아요.','예: 차 뒤에 가려서 잘 안 보여서 그래요',1),ladPick(k,'cause',CAUSES))}
+  </div></div>
+ <div class="toy"><h3>문제 문장 완성하기</h3>
+  ${fld(k,'why','나나 가족, 친구가 이런 일을 겪은 적 있어?','진짜 경험이 있으면 더 좋은 문제가 돼요. 없으면 들어 본 이야기도 좋아요.','예: 내 동생도 학교 앞에서 차가 갑자기 와서 놀란 적이 있어요.',1)}
+  ${fld(k,'future','10년 뒤에는 어떻게 될까? (선택)','','예: 자율주행차가 많아져서 사람을 잘 알아보는 게 더 중요해질 거예요.',1)}${ladPick(k,'future',FUTURES)}
+  <div class="sentbox"><b>자동으로 만든 문제 문장</b><p id="autoSent" class="sent">위 사다리를 채우면 여기에 문장이 생겨요.</p><button type="button" class="btn" data-act="useSent" data-k="${k}">이 문장을 아래 칸에 넣기</button></div>
+  ${fld(k,'prob','내 문제 문장 (계획서 ① 칸)','위 문장을 가져와서 내 말로 다듬어요. 누가 · 어디서 · 어떤 불편이 모두 들어가게!','예: 아침 등교 때 학교 앞 스쿨존 횡단보도에서 1학년 동생이 차 사이에서 갑자기 뛰어나와서 위험해요.',1,90)}
   ${submitBar(k)}</div>`};
+const WHEN={1:['아침 등교 때','하교할 때','비 오는 날','어두운 밤','차가 많은 시간'],2:['급식 먹고 나서','분리수거 하는 날','청소 시간','쉬는 시간','아무도 없는 방과 후'],3:['혼자 계실 때','약 드실 시간','밤에 주무실 때','가족이 일하러 간 낮','화장실 가실 때'],4:['아주 더운 여름','수확하는 날','비가 많이 온 뒤','밤사이','혼자 일할 때'],5:['불이 났을 때','지진이 났을 때','연기가 가득할 때','밤에 대피할 때','비가 많이 온 날']};
+const FEELS=['위험해요','불편해요','속상해요','힘들어요','시간이 오래 걸려요','걱정돼요'];
+const CAUSES=['잘 안 보여서 그래요','몰라서 그래요 (알려 주는 게 없어요)','깜빡 잊어버려서 그래요','힘이 부족해서 그래요','도와줄 사람이 없어서 그래요','너무 빠르거나 복잡해서 그래요'];
+const FUTURES=['로봇과 자율주행차가 많아져서','어르신이 더 많아져서','날씨가 더 심해져서','혼자 사는 사람이 많아져서','일할 사람이 줄어서'];
+function lstep(n,field,chips){return `<div class="lstep"><span class="lnum">${n}</span><div class="lbody">${field}${chips}</div></div>`}
+function ladPick(k,f,list){if(!list.length)return '';const ro=!isT()&&!canSubmit(k);const cur=(draft(k)[f]||'');return `<div class="chips pickrow">${list.map(x=>`<button type="button" class="chip" data-act="pickTo" data-k="${k}" data-f="${f}" data-v="${esc(x)}" aria-pressed="${cur===x}" ${ro?'disabled':''}>${esc(x)}</button>`).join('')}</div>`}
+function josa(w,a,b){const c=(w||'').trim().slice(-1).charCodeAt(0);if(c>=0xAC00&&c<=0xD7A3)return (c-0xAC00)%28?a:b;return a+'('+b+')'}
+function autoSent(d){const who=(d.who||'').trim(),where=(d.where||'').trim(),when=(d.when||'').trim(),what=(d.what||'').trim(),feel=(d.feel||'').trim(),cause=(d.cause||'').trim();
+ if(!who||!where||!what)return '';let s=(when?when+' ':'')+where+'에서 '+who+josa(who,'이','가')+' '+what+(feel?' '+feel:'');s=s.replace(/\s+/g,' ').trim();if(!/[.!?요]$/.test(s))s+='요';if(!/[.!?]$/.test(s))s+='.';
+ if(cause){let c=cause.replace(/\s*\(.*?\)\s*/g,' ').trim();if(!/[.!?]$/.test(c))c+='.';s+=' '+c}return s}
 AV.step2=a=>{const k=a.k,p1=draft(`P${a.topic}-1`);const d=draft(k);const fns=HUSKY9.map(f=>f.n);const ro=!isT()&&!canSubmit(k);
  return `${stepGuide(2)}${fbBox([`P${a.topic}-1`,k])}<div class="note"><b>내가 찾은 문제</b> ${esc(p1.prob||'(1단계를 먼저 해요)')}</div>
  <div class="toy"><h3>해결 아이디어</h3>${fld(k,'title','로봇 이름','','예: 할머니 약 지킴이')}
@@ -2025,6 +2054,8 @@ const ACT={
  lqAns:b=>{const q=LQ.items[LQ.i];const j=+b.dataset.v,ok=j===q.a;LQ.res[LQ.i]=ok;if(ok)LQ.score++;$$('#lquiz .q-opt').forEach(x=>{x.disabled=true;const v=+x.dataset.v;if(v===q.a)x.classList.add('right');else if(v===j)x.classList.add('wrong')});$('#lqAfter').innerHTML=`<div class="explain"><b>${ok?'정답!':'아쉬워요.'}</b> ${q.e}</div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="lqNext">${LQ.i===LQ.items.length-1?'결과 보기':'다음 문제'}</button></div>`},
  lqNext:()=>{LQ.i++;renderLQ()},
  lqAgain:()=>{LQ=null;render()},
+ pickTo:b=>{const k=b.dataset.k,f=b.dataset.f,v=b.dataset.v,d=draft(k);d[f]=v;saveDraft(k);const el=document.getElementById(k+'-'+f);if(el){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}))}b.parentElement.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)))},
+ useSent:b=>{const k=b.dataset.k,d=draft(k);const t=autoSent(d);if(!t){toast('사다리 1, 2, 4번을 먼저 채워 주세요');return}d.prob=t;saveDraft(k);const el=document.getElementById(k+'-prob');if(el){el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));el.focus()}toast('문장을 넣었어요. 내 말로 다듬어 봐요!')},
  fnPick:b=>{const k=b.dataset.k,d=draft(k);d.fns=(d.fns||[]).slice();const v=b.dataset.v,i=d.fns.indexOf(v);if(i>=0)d.fns.splice(i,1);else{if(d.fns.length>=2)d.fns.shift();d.fns.push(v)}saveDraft(k);render(true)},
  mechPick:b=>{const k=b.dataset.k,d=draft(k);d.mechs=(d.mechs||[]).slice();const v=b.dataset.v,i=d.mechs.indexOf(v);if(i>=0)d.mechs.splice(i,1);else d.mechs.push(v);saveDraft(k);render(true)},
  stepSubmit:b=>{const k=b.dataset.k,a=ACTK[k],d=draft(k);if(!canSubmit(k)){toast('마감이 지나서 제출할 수 없어요');return}
@@ -2192,7 +2223,8 @@ const PAGER={pg:{},ex:{},lastL:{},
    if(h)h.after(...box.children);else s.prepend(...box.children)});
   act.querySelectorAll('.tbl.parts').forEach(tb=>{const w=tb.closest('.tblwrap')||tb;if(w.previousElementSibling&&w.previousElementSibling.classList.contains('kqtip'))return;w.insertAdjacentHTML('beforebegin','<div class="kqtip">쓸 부품만 골라요. <b>개수</b>를 고르고, 허브의 어느 <b>포트(A~F)</b>에 꽂을지, 그 부품이 <b>무슨 일</b>을 하는지 짧게 써요. 안 쓰는 부품은 0으로 두면 돼요.</div>')});
   act.querySelectorAll('.grid3').forEach(g=>{if([...g.querySelectorAll('label.f.q .h')].some(x=>x.textContent.trim()))g.classList.add('hashint')});
-  act.addEventListener('input',upd);upd()},
+  act.addEventListener('input',upd);upd();
+  const as=act.querySelector('#autoSent');if(as){const k=PARAM;const f=()=>{const t=autoSent(draft(k));as.textContent=t||'위 사다리를 채우면 여기에 문장이 생겨요.';as.style.opacity=t?1:.6};act.addEventListener('input',()=>setTimeout(f,0));f()}},
  examples(act){const secs=[...act.querySelectorAll(':scope > .toy, :scope > .panel')].filter(s=>s.querySelector('input[placeholder],textarea[placeholder]'));
   const on=this.ex[PARAM]||(this.ex[PARAM]=new Set());
   secs.forEach((sec,i)=>{let n=0;sec.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(f=>{const ph=f.getAttribute('placeholder');if(!ph||f.type==='password')return;n++;
