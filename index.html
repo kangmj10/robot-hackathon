@@ -537,6 +537,22 @@ textarea[readonly],input[readonly]{opacity:.75}
 .exfull summary{cursor:pointer;font-weight:800;font-size:1.05rem}
 .bigclock{font-family:var(--f-display);font-size:2rem;font-variant-numeric:tabular-nums}
 .bigclock.run{color:var(--bad)}
+.rb-how{background:var(--yellow-light,#fff4c4)}
+.rb-flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.rb-flow span{background:#fff;border-radius:999px;padding:6px 14px;font-size:.95rem}.rb-flow i{font-style:normal;font-weight:800}
+.rb-flow .hi{background:#1c1c1e;color:#ffd02f;font-weight:800}
+.rbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.rb{background:var(--surface);border:1px solid var(--line-soft,#eee);border-top:8px solid var(--mc);border-radius:22px;padding:18px;display:grid;gap:10px;align-content:start;box-shadow:var(--sh2)}
+.rb-top{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:center}
+.rb-ic{width:64px;height:64px;border-radius:18px;background:color-mix(in srgb,var(--mc) 12%,#fff);display:grid;place-items:center}
+.rb h3{margin:0;font-size:1.3rem}
+.rb-tag{display:inline-block;background:var(--mc);color:#fff;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:800}
+.rb p{margin:0;line-height:1.6}
+.rb-hl,.rb-code,.rb-ex{display:grid;gap:4px;background:var(--sunk);border-radius:14px;padding:10px 12px;font-size:.93rem}
+.rb-code{background:#1c1c1e;color:#fff}.rb-code b{color:#ffd02f}
+.rb-ex span{display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.rb-ex i{font-style:normal;flex:none;width:22px;height:22px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:.78rem;font-weight:800;margin-top:1px}
+.rb-fns{display:flex;flex-wrap:wrap;gap:4px}
 .ladder{display:grid;gap:14px;position:relative}
 .lstep{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
 .lnum{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#1c1c1e;display:grid;place-items:center;font-family:var(--f-display);font-size:1.4rem;box-shadow:0 3px 0 rgba(0,0,0,.12);margin-top:10px}
@@ -1525,10 +1541,10 @@ function dueTag(i,k){const a=assignOf(i,k);if(!a)return '';const d=ddiff(todaySt
 
 /* ================= ROUTING ================= */
 let VIEW='home',PARAM=null;
-const STU_TABS=[['home','오늘 할 일'],['book','숙제장'],['videos','소주제 영상'],['library','용어 사전']];
+const STU_TABS=[['home','오늘 할 일'],['book','숙제장'],['videos','소주제 영상'],['robots','로봇 도감'],['library','용어 사전']];
 const T_TABS=[['tdash','대시보드'],['tplan','숙제 일정'],['tacts','활동 미리 보기'],['official','자료실'],['tset','설정']];
-const LIBS=[['videos','소주제 영상'],['official','대회 자료 요약'],['specs','부품 사양'],['links','추천 링크'],['library','용어 사전']];
-function parse(){const h=(location.hash||'').slice(1);if(h.startsWith('do-')&&ACTK[h.slice(3)])return ['do',h.slice(3)];const m=h.match(/^rev-(\d)-(\d)$/);if(m)return ['rev',{i:+m[1],t:+m[2]}];const mi=h.match(/^tideas-(\d)$/);if(mi)return ['tideas',+mi[1]];const ok=['who','home','book','myplans','library','videos','tdash','tplan','tacts','official','specs','links','tset'];return [ok.includes(h)?h:(isT()?'tdash':'home'),null]}
+const LIBS=[['videos','소주제 영상'],['robots','로봇 도감'],['official','대회 자료 요약'],['specs','부품 사양'],['links','추천 링크'],['library','용어 사전']];
+function parse(){const h=(location.hash||'').slice(1);if(h.startsWith('do-')&&ACTK[h.slice(3)])return ['do',h.slice(3)];const m=h.match(/^rev-(\d)-(\d)$/);if(m)return ['rev',{i:+m[1],t:+m[2]}];const mi=h.match(/^tideas-(\d)$/);if(mi)return ['tideas',+mi[1]];const ok=['who','home','book','myplans','library','videos','robots','tdash','tplan','tacts','official','specs','links','tset'];return [ok.includes(h)?h:(isT()?'tdash':'home'),null]}
 function route(){[VIEW,PARAM]=parse();if(ME===''&&VIEW!=='who')VIEW='who';if(!isT()&&(VIEW.startsWith('t')||VIEW==='rev'))VIEW='home';render()}
 window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0)});
 const DEPS={who:['cfg'],home:['assign','mystu','cfg','myfb','myai'],book:['assign','mystu','cfg'],myplans:['myai','mystu','assign'],tdash:['assign','stu','fb','ai','cfg','ideas'],tplan:['assign','cfg'],tacts:['assign'],tset:['cfg'],rev:['stu','fb','ai','assign','cfg','ideas'],tideas:['stu','ideas','cfg']};
@@ -1673,7 +1689,7 @@ AV.step2=a=>{const k=a.k,p1=draft(`P${a.topic}-1`);const d=draft(k);const fns=HU
   <div class="grid3">${fld(k,'scene1','① 처음에','','예: 저녁 7시, 할머니가 TV를 보고 계세요.',1)}${fld(k,'scene2','② 로봇이 알아채면','','예: 할머니가 약 상자 앞에 오자 로봇이 얼굴을 알아봐요.',1)}${fld(k,'scene3','③ 그 결과','','예: 뚜껑이 열리고 "약 드세요" 소리가 나요.',1)}</div></div>
  <div class="toy"><h3>허스키렌즈로 무엇을 알아볼까?</h3><b style="font-size:.93rem">쓸 기능 (1~2개)</b>${chipsHtml(fns,d.fns||[],'fnPick','h',`data-k="${k}" ${ro?'disabled':''}`)}
   ${fld(k,'fnWhy','이 기능을 고른 이유','','예: 할머니와 다른 사람을 구분해야 해서 얼굴 인식을 골랐어요.',1)}
-  <div class="grid3" style="margin-top:8px">${fld(k,'inp','인식 (입력)','허스키렌즈가 무엇을 알아보나요?','예: 할머니 얼굴을 ID 1로 학습',1)}${fld(k,'cond','판단 (조건)','만약 ~라면','예: 만약 ID 1이 보이고 약 먹을 시간이면',1)}${fld(k,'act','동작 (출력)','로봇이 무엇을 하나요?','예: ① 모터로 뚜껑 열기 ② 소리',1)}</div>
+  <p class="small" style="margin:4px 0 0">로봇이 어떻게 움직일지 떠오르지 않으면 <a href="#robots" target="_self">로봇 도감</a>을 구경해 봐요.</p><div class="grid3" style="margin-top:8px">${fld(k,'inp','인식 (입력)','허스키렌즈가 무엇을 알아보나요?','예: 할머니 얼굴을 ID 1로 학습',1)}${fld(k,'cond','판단 (조건)','만약 ~라면','예: 만약 ID 1이 보이고 약 먹을 시간이면',1)}${fld(k,'act','동작 (출력)','로봇이 무엇을 하나요?','예: ① 모터로 뚜껑 열기 ② 소리',1)}</div>
   
   ${fld(k,'effect','이 로봇이 있으면 무엇이 좋아질까요?','발전 가능성도 생각해요','예: 할머니가 약을 제때 드시고, 가족도 안심해요. 나중에는 가족 휴대폰으로 알림을 보낼 수도 있어요.',1)}
   </div>
@@ -1998,6 +2014,52 @@ W.threshold=el=>{let bk=8,wh=92,th=50;const samples=[['검은 선 한가운데',
 
 /* ================= LIBRARY VIEWS ================= */
 let GCAT='전체';
+
+/* ================= 로봇 도감 ================= */
+const MOVES={drive:['바퀴로 이동','#4262ff'],grab:['집기','#ec4f94'],door:['열고 닫기','#0fbcb0'],sort:['보고 나누기','#ff9419'],slide:['앞뒤로 밀기','#8a5cf6'],gauge:['바늘로 알리기','#12a38a'],spin:['돌리기','#e0452b'],buddy:['친구 로봇','#c27400']};
+const MOVE_SVG={
+ drive:'<rect x="12" y="20" width="40" height="20" rx="6"/><circle cx="20" cy="44" r="7"/><circle cx="44" cy="44" r="7"/><path d="M52 30h6M55 27l3 3-3 3"/>',
+ grab:'<path d="M10 32h22"/><rect x="4" y="27" width="10" height="10" rx="2"/><path d="M32 32l12-10M32 32l12 10M44 22l8 6M44 42l8-6"/>',
+ door:'<rect x="10" y="12" width="34" height="38" rx="3"/><path d="M44 16l12-6v40l-12-4"/><circle cx="38" cy="32" r="2.5"/>',
+ sort:'<rect x="6" y="34" width="52" height="8" rx="2"/><rect x="14" y="22" width="9" height="9" rx="2"/><rect x="36" y="22" width="9" height="9" rx="2"/><path d="M30 10v8M26 14h8M50 18l8-6"/>',
+ slide:'<rect x="6" y="28" width="52" height="8" rx="3"/><rect x="22" y="16" width="14" height="12" rx="2"/><path d="M12 48h40M16 44l-4 4 4 4M48 44l4 4-4 4"/>',
+ gauge:'<path d="M10 44a22 22 0 0 1 44 0"/><path d="M32 44l12-14"/><circle cx="32" cy="44" r="3"/><path d="M14 44h4M46 44h4M32 22v4"/>',
+ spin:'<circle cx="32" cy="32" r="18"/><path d="M32 14v6M50 32h-6M32 50v-6M14 32h6"/><path d="M44 12l6 2-2 6"/>',
+ buddy:'<rect x="14" y="16" width="36" height="28" rx="8"/><circle cx="25" cy="29" r="4"/><circle cx="39" cy="29" r="4"/><path d="M26 37c4 3 8 3 12 0M24 44v6M40 44v6"/>'};
+function moveIcon(m,sz){sz=sz||56;const c=MOVES[m][1];return `<svg width="${sz}" height="${sz}" viewBox="0 0 64 64" aria-hidden="true" style="stroke:${c};stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round">${MOVE_SVG[m]}</svg>`}
+const ROBOTS=[
+ {n:'드라이빙 베이스 1',st:34,m:'drive',lv:1,what:'바퀴 두 개로 앞뒤로 가고, 왼쪽 오른쪽으로 도는 가장 기본 자동차예요. 대부분의 움직이는 로봇은 여기서 시작해요.',hl:'앞쪽에 앞을 보게 달아요. 선을 따라가려면 아래를 보게 달아요.',fn:['라인 추적','태그 인식','객체 인식'],code:'만약 출구 태그가 보이면 → 멈추고 소리 내기',ex:{1:'학교 앞을 돌며 위험한 곳을 알려 주는 순찰 로봇',2:'바닥의 쓰레기 색을 찾아가는 청소 로봇',3:'어르신 방까지 물건을 가져다주는 심부름 로봇',4:'밭고랑 선을 따라 돌며 해충을 찾는 순찰 로봇',5:'대피로 선을 따라 사람들을 출구로 안내하는 로봇'}},
+ {n:'드라이빙 베이스 2',st:74,m:'drive',lv:2,what:'드라이빙 베이스에 위아래로 움직이는 팔이 붙어 있어요. 이동하면서 물건을 들거나 밀 수 있어요.',hl:'팔 위쪽에서 앞을 보게 달아요.',fn:['객체 추적','색상 인식'],code:'만약 빨간 물건이 가운데 보이면 → 다가가서 팔 내리기',ex:{2:'쓰레기에 다가가 팔로 밀어 수거함에 넣기',4:'익은 열매 앞에서 멈추고 팔로 따기',5:'무너진 곳의 장애물을 밀어 길 만들기'}},
+ {n:'드라이빙 베이스 3',st:38,m:'drive',lv:1,what:'작고 단단한 이동 로봇이에요. 센서를 여러 개 달기 쉬워요.',hl:'앞쪽 가운데에 달아요.',fn:['라인 추적','객체 인식'],code:'만약 사람이 보이면 → 멈추기, 안 보이면 → 계속 가기',ex:{1:'사람이 보이면 멈추는 자율주행 자동차 모형',3:'복도를 다니며 어르신을 찾는 안부 로봇',5:'연기 속을 먼저 들어가 사람을 찾는 수색 로봇'}},
+ {n:'고급형 드라이빙 베이스',st:136,m:'drive',lv:3,what:'더 크고 튼튼한 이동 로봇이에요. 앞에 여러 가지 도구를 바꿔 끼울 수 있어요. 단계가 많아서 시간이 오래 걸려요.',hl:'위쪽 가운데에 높게 달면 멀리까지 보여요.',fn:['라인 추적','태그 인식','객체 분류'],code:'만약 A구역 태그가 보이면 → "A구역 확인" 표시하기',ex:{2:'구역마다 돌며 분리수거함을 확인하는 로봇',4:'넓은 밭을 구역별로 돌며 살피는 로봇',5:'구역 태그를 차례로 읽으며 수색하는 로봇'}},
+ {n:'배송용 카트',st:45,m:'drive',lv:2,what:'뒤에 짐칸이 달린 자동차예요. 물건을 싣고 옮길 수 있어요.',hl:'앞쪽에 앞을 보게 달아요.',fn:['얼굴 인식','라인 추적','태그 인식'],code:'만약 할머니 얼굴이 보이면 → 멈추고 "약 왔어요" 소리',ex:{3:'약이나 물을 어르신께 배달하는 로봇',4:'수확한 과일을 창고로 옮기는 카트',5:'대피소에 구호 물품을 나르는 로봇'}},
+ {n:'로봇 손',st:28,m:'grab',lv:1,what:'모터로 손가락을 오므렸다 폈다 해요. 단계가 적어서 금방 만들어요.',hl:'손 바로 위나 옆에서 집을 물건을 보게 달아요.',fn:['색상 인식','객체 추적'],code:'만약 빨간색이 가운데 보이면 → 손 오므리기',ex:{2:'캔만 골라 집는 손',3:'어르신께 물건을 건네주는 손',4:'빨갛게 익은 딸기만 집는 손'}},
+ {n:'집게',st:66,m:'grab',lv:2,what:'팔 끝에 집게가 달려 물건을 꽉 잡고 들어 올려요.',hl:'집게 위쪽에서 아래를 보게 달아요.',fn:['색상 인식','객체 분류'],code:'만약 페트병이 보이면 → 집어서 오른쪽 통에 놓기',ex:{2:'쓰레기를 집어 맞는 통에 넣는 로봇 팔',4:'익은 열매를 따서 바구니에 넣는 수확 팔',5:'구호 물품을 집어 옮기는 팔'}},
+ {n:'도구',st:56,m:'grab',lv:2,what:'자동차 앞에 움직이는 도구 팔이 달려 있어요. 이동과 집기를 함께 할 수 있어요.',hl:'자동차 앞쪽에 달아요.',fn:['객체 추적','태그 인식'],code:'만약 물건이 보이면 → 다가가서 도구 팔 움직이기',ex:{2:'운동장을 다니며 쓰레기를 줍는 로봇',5:'위험한 곳에서 물건을 치우는 로봇'}},
+ {n:'안전 금고',st:77,m:'door',lv:2,what:'문이 달린 상자예요. 모터로 잠금을 열고 닫아요.',hl:'문 앞에 사람 얼굴 높이로 달아요.',fn:['얼굴 인식','태그 인식'],code:'만약 등록한 얼굴이 보이면 → 문 열기, 모르는 얼굴이면 → 잠그고 알리기',ex:{2:'올바른 쓰레기를 보여 주면 열리는 분리수거함',3:'할머니 얼굴을 알아보면 열리는 약 상자',5:'구조대원 카드를 보여 주면 열리는 비상 물품함'}},
+ {n:'슈퍼 안전 금고',st:83,m:'door',lv:3,what:'안전 금고보다 잠금 장치가 많고 화면으로 표시도 해요.',hl:'문 앞 정면에 달아요.',fn:['얼굴 인식'],code:'만약 가족 얼굴이 보이면 → 문 열고 화면에 웃는 얼굴',ex:{3:'가족만 열 수 있는 현관문 모형',5:'지진 때 자동으로 열리는 비상문'}},
+ {n:'품질 검사 로봇',st:30,m:'sort',lv:1,what:'물건을 보고 좋은 것과 나쁜 것을 나눠요. 단계가 적어서 금방 만들어요.',hl:'물건이 놓이는 곳 바로 위에서 아래를 보게 달아요.',fn:['객체 분류','색상 인식'],code:'만약 캔이면 → 왼쪽으로 밀기, 페트병이면 → 오른쪽으로 밀기',ex:{2:'캔, 페트병, 종이를 나누는 분리수거 로봇',4:'익은 열매와 덜 익은 열매를 나누는 선별기'}},
+ {n:'게임 마스터',st:42,m:'spin',lv:2,what:'돌아가는 장치로 블록을 하나씩 내보내요.',hl:'내보내는 곳 앞에 달아요.',fn:['얼굴 인식','태그 인식'],code:'만약 할머니 얼굴이 보이고 약 먹을 시간이면 → 한 칸 돌려 약 내보내기',ex:{3:'시간에 맞춰 약을 한 알씩 내주는 약 통',4:'가축에게 사료를 나눠 주는 장치'}},
+ {n:'트래커',st:58,m:'slide',lv:2,what:'긴 레일 위를 앞뒤로 미끄러지듯 움직여요.',hl:'움직이는 부분 위에 달아서 따라가게 해요.',fn:['객체 추적'],code:'만약 물건이 왼쪽으로 가면 → 레일도 왼쪽으로 따라가기',ex:{1:'다가오는 차를 따라 움직이며 지켜보는 카메라',4:'줄지어 있는 화분을 차례로 살피는 장치'}},
+ {n:'CNC 기계',st:62,m:'slide',lv:3,what:'레일 위를 정확하게 앞뒤로 움직여요. 밀어내는 장치로 쓰기 좋아요.',hl:'레일 끝에서 레일 쪽을 보게 달아요.',fn:['색상 인식','객체 분류'],code:'만약 종이가 보이면 → 밀대를 앞으로 밀기',ex:{2:'잘못 버린 쓰레기를 밀어내는 컨베이어 대신 장치',1:'미닫이처럼 밀려 나오는 차단문'}},
+ {n:'일기예보관',st:43,m:'gauge',lv:2,what:'바늘과 우산 모양으로 날씨를 알려 주는 표시판이에요.',hl:'알아볼 것 쪽을 보게 달아요.',fn:['객체 인식','태그 인식'],code:'만약 위험한 것이 보이면 → 바늘을 "위험"으로 돌리기',ex:{1:'차가 오면 "멈춰!"로 바뀌는 알림판',5:'재난 태그를 보면 경보를 보여 주는 표시판'}},
+ {n:'풍속계',st:49,m:'gauge',lv:2,what:'바람에 돌아가는 날개로 바람 세기를 재고 보여 줘요.',hl:'옆에 따로 세워 날개 쪽을 보게 달아요.',fn:['객체 인식'],code:'만약 바람이 세면 → 경고 소리 내기',ex:{4:'바람이 세지면 비닐하우스 창을 닫는 장치',5:'태풍이 오면 경보를 울리는 장치'}},
+ {n:'만보계',st:47,m:'gauge',lv:2,what:'걸음 수를 세어 보여 주는 장치예요.',hl:'사람이 지나가는 쪽을 보게 달아요.',fn:['객체 인식','얼굴 인식'],code:'만약 할머니가 오늘 한 번도 안 보이면 → 가족에게 알리기',ex:{3:'어르신이 오늘 얼마나 움직이셨는지 알려 주는 장치'}},
+ {n:'강아지 키키',st:39,m:'buddy',lv:2,what:'귀엽게 반응하는 강아지 로봇이에요. 말벗이나 반려 로봇으로 쓰기 좋아요.',hl:'얼굴(눈) 위치에 앞을 보게 달아요.',fn:['얼굴 인식'],code:'만약 할머니 얼굴이 보이면 → 꼬리 흔들고 인사하기',ex:{3:'어르신을 알아보면 반갑게 인사하는 말벗 로봇'}},
+ {n:'트레이너 레오',st:34,m:'buddy',lv:1,what:'눈과 입이 있는 캐릭터 로봇이에요. 표정으로 알려 줄 수 있어요.',hl:'눈 위쪽에 달아요.',fn:['얼굴 인식','태그 인식'],code:'만약 약 먹을 시간 태그가 보이면 → 입을 움직이며 소리로 알리기',ex:{3:'운동 시간과 약 시간을 알려 주는 도우미',2:'분리배출을 잘하면 칭찬해 주는 캐릭터'}},
+ {n:'차단봉 (직접 만들기)',st:0,m:'door',lv:1,what:'앱 설명서는 없어요. 중형 모터에 긴 빔을 하나 끼우면 끝! 모터가 90도 돌면 차단봉이 내려와요.',hl:'옆 기둥 위에서 길을 비스듬히 내려다보게 달아요.',fn:['객체 인식'],code:'만약 사람과 자동차가 함께 보이면 → 차단봉 내리고 삐삐 소리',ex:{1:'아이가 건널 때 차를 막는 스쿨존 차단봉',5:'물이 차면 길을 막는 침수 차단봉'}}];
+let RB_M='전체',RB_T=0;
+V.robots=()=>{const L=ROBOTS.filter(r=>(RB_M==='전체'||r.m===RB_M)&&(!RB_T||r.ex[RB_T]));
+ return `${pageHead('로봇 도감','SPIKE 앱의 조립 설명서 중에서 대회에 쓰기 좋은 로봇을 모았어요. 로봇은 몸, 허스키렌즈는 눈, 코드는 뇌예요!')}
+ <div class="card rb-how"><b>로봇 도감 보는 법</b><div class="rb-flow"><span>앱 모델 = <b>몸</b></span><i>+</i><span>허스키렌즈 = <b>눈</b></span><i>+</i><span>코드 = <b>뇌</b></span><i>=</i><span class="hi">AI 로봇!</span></div><p class="small" style="margin:6px 0 0">조립 설명서는 SPIKE 앱의 <b>"조립"</b> 메뉴에서 같은 이름을 찾으면 돼요. 단계 수가 적을수록 빨리 만들어요.</p></div>
+ <div class="card"><b>움직임으로 찾기</b><div class="chips" style="margin:6px 0 10px">${['전체',...Object.keys(MOVES)].map(m=>`<button class="chip" data-act="rbM" data-v="${m}" aria-pressed="${RB_M===m}">${m==='전체'?'전체':MOVES[m][0]}</button>`).join('')}</div>
+ <b>소주제로 찾기</b><div class="chips" style="margin-top:6px">${[0,...TOPICS.map(t=>t.n)].map(n=>`<button class="chip" data-act="rbT" data-v="${n}" aria-pressed="${RB_T===n}">${n?n+'. '+esc(topicOf(n).t):'전체'}</button>`).join('')}</div></div>
+ ${L.length?`<div class="rbgrid">${L.map(r=>{const mv=MOVES[r.m];const exs=Object.entries(r.ex).filter(([t])=>!RB_T||+t===RB_T);return `<article class="rb" style="--mc:${mv[1]}"><div class="rb-top"><div class="rb-ic">${moveIcon(r.m)}</div><div><h3>${esc(r.n)}</h3><span class="rb-tag">${mv[0]}</span> <span class="small">${r.st?r.st+'단계':'설명서 없음'} · ${'★'.repeat(r.lv)}${'☆'.repeat(3-r.lv)}</span></div></div>
+  <p>${esc(r.what)}</p>
+  <div class="rb-hl"><b>허스키렌즈 달기</b><span>${esc(r.hl)}</span><span class="rb-fns">${r.fn.map(f=>`<span class="tag">${esc(f)}</span>`).join(' ')}</span></div>
+  <div class="rb-code"><b>코드 한 줄</b><span>${esc(r.code)}</span></div>
+  <div class="rb-ex"><b>이렇게 쓸 수 있어요</b>${exs.map(([t,v])=>`<span><i style="background:${topicOf(t).c}">${t}</i>${esc(v)}</span>`).join('')}</div></article>`}).join('')}</div>`:'<div class="empty">조건에 맞는 로봇이 없어요. 다른 조건을 골라 봐요.</div>'}
+ <p class="small">★ 쉬움 · ★★ 보통 · ★★★ 어려움 (조립 단계 수 기준). 단계 수는 SPIKE 앱 화면 기준이에요.</p>`};
 V.library=()=>{const cats=['전체',...new Set(GLOSSARY.map(g=>g[0]))];
  return `${pageHead('용어 사전','튜토리얼과 대회에서 나오는 낱말을 모았어요. 모르는 낱말이 나오면 찾아봐요.')}
  <div class="card"><input type="text" id="gq" placeholder="낱말 찾기 (예: 변수, 클래스, 디오라마)"><div class="row" style="margin-top:8px">${cats.map(c=>`<button class="chip" data-act="gcat" data-v="${c}" aria-pressed="${c===GCAT}">${c}</button>`).join('')}</div></div>
@@ -2076,7 +2138,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList&&
 /* ================= NEW WIDGETS ================= */
 function videoBox(t,open=true){return `<div class="toy vidbox" style="border-top:10px solid ${t.c}"><h3 style="font-size:1.4rem">먼저 영상 보기: 렌즈봇과 알아보는 「${esc(t.t)}」</h3><p class="small">약 3분이에요. 소리를 켜고 끝까지 본 다음, 아래에서 문제를 찾아요. 모르는 낱말이 나오면 다시 돌려 봐도 좋아요.</p><video controls preload="metadata" playsinline src="videos/topic${t.n}.mp4"></video></div>`}
 V.videos=()=>`${pageHead('소주제 영상 5편','소주제마다 렌즈봇이 실제 통계와 사례로 주제를 소개해요. 대회 날 어떤 소주제가 뽑혀도 괜찮도록 다섯 편 모두 미리 봐 두면 좋아요.')}${TOPICS.map(t=>videoBox(t)).join('')}`;
-['library','official','specs','links','videos'].forEach(k=>{const f=V[k];V[k]=()=>libNav()+f()});
+['library','official','specs','links','videos','robots'].forEach(k=>{const f=V[k];V[k]=()=>libNav()+f()});
 W.bodymap=el=>{const box=(img,name,body,ex)=>`<div class="bm-item"><img src="${IMG[img]}" alt="${esc(name)}"><div><b>${name}</b><span class="bm-body">${body}</span><span class="small">${ex}</span></div></div>`;
  el.innerHTML=`<div class="bodymap"><div class="bm-col"><h5>입력 · 느끼기</h5>${box('dist','거리 센서','= 박쥐의 귀','얼마나 가까운지')}${box('color','컬러 센서','= 가까이 보는 눈','무슨 색인지')}${box('force','힘 센서','= 손끝 촉감','눌렸는지')}${box('hlBoard','허스키렌즈','= 기억하는 눈','누구인지, 무엇인지')}</div>
  <div class="bm-arrow" aria-hidden="true">→</div><div class="bm-col bm-brain"><h5>처리 · 생각하기</h5><img src="${IMG.hub}" alt="허브"><b>허브 = 뇌</b><span class="small">"가까우면 멈추자!"<br>"할머니면 뚜껑을 열자!"</span></div><div class="bm-arrow" aria-hidden="true">→</div>
@@ -2104,6 +2166,8 @@ const ACT={
  lqAns:b=>{const q=LQ.items[LQ.i];const j=+b.dataset.v,ok=j===q.a;LQ.res[LQ.i]=ok;if(ok)LQ.score++;$$('#lquiz .q-opt').forEach(x=>{x.disabled=true;const v=+x.dataset.v;if(v===q.a)x.classList.add('right');else if(v===j)x.classList.add('wrong')});$('#lqAfter').innerHTML=`<div class="explain"><b>${ok?'정답!':'아쉬워요.'}</b> ${q.e}</div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="lqNext">${LQ.i===LQ.items.length-1?'결과 보기':'다음 문제'}</button></div>`},
  lqNext:()=>{LQ.i++;renderLQ()},
  lqAgain:()=>{LQ=null;render()},
+ rbM:b=>{RB_M=b.dataset.v;render(true)},
+ rbT:b=>{RB_T=+b.dataset.v;render(true)},
  pickTo:b=>{const k=b.dataset.k,f=b.dataset.f,v=b.dataset.v,d=draft(k);d[f]=v;saveDraft(k);const el=document.getElementById(k+'-'+f);if(el){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}))}b.parentElement.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c===b)))},
  ideaPost:b=>{const k=b.dataset.k,t=+b.dataset.t,d=draft(k);if(!canSubmit(k)){toast('마감이 지나서 붙일 수 없어요');return}const sum=autoSent(d);if(!sum){toast('사다리 1, 2, 4번을 먼저 채워 주세요');return}
   const x={createdAt:Date.now(),topic:t,by:String(ME),where:d.where||'',who:d.who||'',when:d.when||'',what:d.what||'',feel:d.feel||'',cause:d.cause||'',future:d.future||'',sum,likes:{},comments:[],star:false};
